@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotspot Zone – Connection Status</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f172a;
+      --surface: #1e293b;
+      --card:    #263148;
+      --accent:  #38bdf8;
+      --accent2: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger:  #f87171;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --border:  #334155;
+      --radius:  14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(56,189,248,.1) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(129,140,248,.08) 0%, transparent 55%);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2.25rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+      text-align: center;
+    }
+
+    /* ── Status Icon ──────────────────────────────────────────── */
+    .status-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    /* ── Pending state ────────────────────────────────────────── */
+    .pending-ring {
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 4px solid var(--border);
+      border-top-color: var(--warning);
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Active state ─────────────────────────────────────────── */
+    .active-ring {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(52,211,153,.12);
+      border: 3px solid var(--success);
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+    }
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,.4); }
+      50%       { box-shadow: 0 0 0 16px rgba(52,211,153,0); }
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: .4rem; }
+    .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 1.6rem; }
+
+    /* ── Info table ───────────────────────────────────────────── */
+    .info-table {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .7rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: .82rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .info-value { font-size: .92rem; font-weight: 600; }
+    .info-value.highlight { color: var(--success); }
+
+    /* ── Countdown ────────────────────────────────────────────── */
+    #countdown { font-size: 1.05rem; font-weight: 700; color: var(--accent); }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn {
+      display: inline-block;
+      padding: .75rem 1.6rem;
+      border: none;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .2s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ── Poll notice ──────────────────────────────────────────── */
+    .poll-notice {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 1.2rem;
+    }
+    .dots::after {
+      content: '';
+      animation: dots 1.4s steps(4, end) infinite;
+    }
+    @keyframes dots {
+      0%   { content: ''; }
+      25%  { content: '.'; }
+      50%  { content: '..'; }
+      75%  { content: '...'; }
+      100% { content: ''; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  {% if status == "pending" %}
+  <!-- ─── PENDING ─────────────────────────────────────── -->
+  <div class="pending-ring"></div>
+  <h1 style="color: var(--warning);">Awaiting Approval</h1>
+  <p class="subtitle">Your payment is being verified by our team.</p>
+
+  <div class="info-table">
+    <div class="info-row">
+      <span class="info-label">Name</span>
+      <span class="info-value">{{ name }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Plan</span>
+      <span class="info-value">{{ plan_hours }} hour{% if plan_hours > 1 %}s{% endif %}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Amount</span>
+      <span class="info-value highlight">৳{{ amount }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Method</span>
+      <span class="info-value">{{ method }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Transaction ID</span>
+      <span class="info-value"><code>{{ txn_id }}</code></span>
+    </div>
+  </div>
+
+  <p class="poll-notice">
+    Checking status<span class="dots"></span><br/>
+    This page refreshes automatically every 10 seconds.
+  </p>
+
+  <script>
+    // Poll /status every 10 seconds; redirect to portal root once active
+    function checkStatus() {
+      fetch('/status')
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'active') {
+            window.location.href = '/success';
+          }
+        })
+        .catch(() => {});
+    }
+    setInterval(checkStatus, 10000);
+    checkStatus();
+  </script>
+
+  {% elif status == "active" %}
+  <!-- ─── ACTIVE ──────────────────────────────────────── -->
+  <div class="active-ring pulse">🌐</div>
+  <h1 style="color: var(--success);">You're Connected!</h1>
+  <p class="subtitle">Enjoy your internet session, {{ name }}.</p>
+
+  <div class="info-table">
+    <div class="info-row">
+      <span class="info-label">Plan</span>
+      <span class="info-value">{{ plan_hours }} hour{% if plan_hours > 1 %}s{% endif %}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Session Expires</span>
+      <span class="info-value highlight">
+        {% if expires_at %}
+          {{ expires_at.strftime('%d %b %Y, %H:%M') }}
+        {% else %}—{% endif %}
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Time Remaining</span>
+      <span class="info-value" id="countdown">—</span>
+    </div>
+  </div>
+
+  <a href="http://www.google.com" class="btn btn-primary">🌍 Browse the Internet</a>
+
+  <script>
+    const expiresAt = new Date("{{ expires_at.strftime('%Y-%m-%dT%H:%M:%S') if expires_at else '' }}Z");
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = expiresAt - now;
+      if (diff <= 0) {
+        document.getElementById('countdown').textContent = 'Expired';
+        return;
+      }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('countdown').textContent =
+        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+
+  {% else %}
+  <!-- ─── GENERIC / ERROR ─────────────────────────────── -->
+  <span class="status-icon">⚠️</span>
+  <h1>Session Unavailable</h1>
+  <p class="subtitle">Your session may have expired or was not found.</p>
+  <a href="/" class="btn btn-outline" style="margin-top:1rem;">← Return to Portal</a>
+  {% endif %}
+
+</div>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotspot Zone – Admin Panel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f172a;
+      --nav:     #1a2640;
+      --surface: #1e293b;
+      --card:    #263148;
+      --accent:  #38bdf8;
+      --accent2: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger:  #f87171;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --border:  #334155;
+      --radius:  10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Navigation ───────────────────────────────────────────── */
+    nav {
+      background: var(--nav);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .85rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links { display: flex; gap: 1rem; align-items: center; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .9rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--danger);
+      color: #fff;
+      border-radius: 99px;
+      font-size: .7rem;
+      padding: .1rem .45rem;
+      margin-left: .3rem;
+      font-weight: 700;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    main { padding: 1.75rem 2rem; max-width: 1300px; margin: 0 auto; }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .section { margin-bottom: 2.5rem; }
+
+    /* ── Flash ────────────────────────────────────────────────── */
+    .flash {
+      padding: .7rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
+      font-size: .9rem;
+    }
+    .flash.danger  { background: rgba(248,113,113,.15); border: 1px solid var(--danger);  color: var(--danger); }
+    .flash.warning { background: rgba(251,191,36,.12);  border: 1px solid var(--warning); color: var(--warning); }
+    .flash.success { background: rgba(52,211,153,.12);  border: 1px solid var(--success); color: var(--success); }
+    .flash.info    { background: rgba(56,189,248,.12);  border: 1px solid var(--accent);  color: var(--accent); }
+
+    /* ── Stats ────────────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+    }
+    .stat-card .label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .stat-card .value { font-size: 1.9rem; font-weight: 800; margin-top: .2rem; }
+    .stat-card.pending .value { color: var(--warning); }
+    .stat-card.active  .value { color: var(--success); }
+    .stat-card.total   .value { color: var(--accent); }
+
+    /* ── Table ────────────────────────────────────────────────── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead th {
+      background: var(--card);
+      padding: .75rem 1rem;
+      text-align: left;
+      font-size: .78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    td { padding: .7rem 1rem; vertical-align: middle; }
+
+    /* ── Badges ───────────────────────────────────────────────── */
+    .pill {
+      display: inline-block;
+      padding: .2rem .65rem;
+      border-radius: 99px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .pill.pending  { background: rgba(251,191,36,.15);  color: var(--warning); border: 1px solid rgba(251,191,36,.4); }
+    .pill.approved { background: rgba(52,211,153,.12);  color: var(--success); border: 1px solid rgba(52,211,153,.4); }
+    .pill.rejected { background: rgba(248,113,113,.12); color: var(--danger);  border: 1px solid rgba(248,113,113,.4); }
+    .pill.active   { background: rgba(52,211,153,.12);  color: var(--success); border: 1px solid rgba(52,211,153,.4); }
+    .pill.expired  { background: rgba(248,113,113,.12); color: var(--danger);  border: 1px solid rgba(248,113,113,.4); }
+    .pill.inactive { background: rgba(148,163,184,.1);  color: var(--muted);   border: 1px solid rgba(148,163,184,.3); }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .35rem .8rem;
+      border: none;
+      border-radius: 7px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+      text-decoration: none;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-success { background: rgba(52,211,153,.2);  color: var(--success); border: 1px solid rgba(52,211,153,.4); }
+    .btn-danger  { background: rgba(248,113,113,.15); color: var(--danger);  border: 1px solid rgba(248,113,113,.4); }
+    .btn-info    { background: rgba(56,189,248,.15);  color: var(--accent);  border: 1px solid rgba(56,189,248,.3); }
+    .btn-warning { background: rgba(251,191,36,.12);  color: var(--warning); border: 1px solid rgba(251,191,36,.3); }
+
+    /* ── Extend form ──────────────────────────────────────────── */
+    .extend-form { display: flex; align-items: center; gap: .4rem; }
+    .extend-form input[type="number"] {
+      width: 56px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: .25rem .4rem;
+      font-size: .82rem;
+      outline: none;
+    }
+
+    /* ── Empty state ──────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 2.5rem;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
+      nav  { padding: .75rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <span class="nav-brand">📡 Hotspot Zone Admin</span>
+  <div class="nav-links">
+    <a href="/admin">Dashboard</a>
+    <a href="/admin/logout">Logout</a>
+    {% if pending_payments %}
+      <span style="color:var(--warning); font-weight:700;">
+        ⚠ {{ pending_payments|length }} pending
+      </span>
+    {% endif %}
+  </div>
+</nav>
+
+<main>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card pending">
+      <div class="label">Pending Payments</div>
+      <div class="value">{{ pending_payments|length }}</div>
+    </div>
+    <div class="stat-card active">
+      <div class="label">Active Sessions</div>
+      <div class="value">{{ active_sessions|length }}</div>
+    </div>
+    <div class="stat-card total">
+      <div class="label">Total Sessions</div>
+      <div class="value">{{ all_sessions|length }}</div>
+    </div>
+  </div>
+
+  <!-- ─── Pending Payments ─────────────────────────────────────── -->
+  <div class="section" id="pending">
+    <h2>⏳ Pending Payment Approvals</h2>
+    <div class="table-wrap">
+      {% if pending_payments %}
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>IP</th>
+            <th>Phone</th>
+            <th>Method</th>
+            <th>Txn ID</th>
+            <th>Amount</th>
+            <th>Plan</th>
+            <th>Submitted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for payment in pending_payments %}
+          <tr>
+            <td>{{ payment.id }}</td>
+            <td><strong>{{ payment.user_session.name }}</strong></td>
+            <td><code>{{ payment.user_session.ip }}</code></td>
+            <td>{{ payment.user_session.phone }}</td>
+            <td>{{ payment.method }}</td>
+            <td><code>{{ payment.txn_id }}</code></td>
+            <td>৳{{ payment.amount }}</td>
+            <td>{{ payment.user_session.plan_hours }}h</td>
+            <td>{{ payment.submitted_at.strftime('%d %b %H:%M') }}</td>
+            <td>
+              <form action="/admin/approve/{{ payment.id }}" method="POST" style="display:inline;">
+                <button class="btn btn-success">✔ Approve</button>
+              </form>
+              <form action="/admin/reject/{{ payment.id }}" method="POST" style="display:inline; margin-left:.3rem;">
+                <button class="btn btn-danger">✖ Reject</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="empty">🎉 No pending payments</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ─── Active Sessions ──────────────────────────────────────── -->
+  <div class="section" id="active">
+    <h2>🟢 Active Sessions</h2>
+    <div class="table-wrap">
+      {% if active_sessions %}
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>IP</th>
+            <th>Phone</th>
+            <th>Plan</th>
+            <th>Expires At</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sess in active_sessions %}
+          <tr>
+            <td>{{ sess.id }}</td>
+            <td><strong>{{ sess.name }}</strong></td>
+            <td><code>{{ sess.ip }}</code></td>
+            <td>{{ sess.phone }}</td>
+            <td>{{ sess.plan_hours }}h</td>
+            <td>
+              {% if sess.expires_at %}
+                {{ sess.expires_at.strftime('%d %b %H:%M') }}
+                {% if sess.expires_at < now %}
+                  <span class="pill expired">Expired</span>
+                {% endif %}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if sess.active and sess.expires_at and sess.expires_at > now %}
+                <span class="pill active">Active</span>
+              {% elif sess.is_expired %}
+                <span class="pill expired">Expired</span>
+              {% else %}
+                <span class="pill inactive">Inactive</span>
+              {% endif %}
+            </td>
+            <td style="white-space:nowrap;">
+              <!-- Extend -->
+              <form action="/admin/extend/{{ sess.id }}" method="POST" class="extend-form" style="display:inline-flex;">
+                <input type="number" name="hours" value="1" min="1" max="24" title="Hours to add" />
+                <button class="btn btn-info">+h</button>
+              </form>
+              <!-- Disconnect -->
+              <form action="/admin/disconnect/{{ sess.id }}" method="POST" style="display:inline; margin-left:.3rem;">
+                <button class="btn btn-danger" onclick="return confirm('Disconnect {{ sess.name }}?')">⏏ Kick</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="empty">No active sessions</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ─── All Sessions ─────────────────────────────────────────── -->
+  <div class="section" id="all">
+    <h2>📋 All Sessions (last 50)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>IP</th>
+            <th>Phone</th>
+            <th>Plan</th>
+            <th>Approved</th>
+            <th>Expires At</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sess in all_sessions %}
+          <tr>
+            <td>{{ sess.id }}</td>
+            <td>{{ sess.name }}</td>
+            <td><code>{{ sess.ip }}</code></td>
+            <td>{{ sess.phone }}</td>
+            <td>{{ sess.plan_hours }}h</td>
+            <td>
+              {% if sess.approved %}
+                <span class="pill approved">Yes</span>
+              {% else %}
+                <span class="pill pending">No</span>
+              {% endif %}
+            </td>
+            <td>{{ sess.expires_at.strftime('%d %b %H:%M') if sess.expires_at else '—' }}</td>
+            <td>
+              {% if sess.active and sess.expires_at and sess.expires_at > now %}
+                <span class="pill active">Active</span>
+              {% elif sess.is_expired %}
+                <span class="pill expired">Expired</span>
+              {% elif not sess.approved %}
+                <span class="pill pending">Pending</span>
+              {% else %}
+                <span class="pill inactive">Inactive</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Auto-refresh the page every 30 seconds to show new pending payments
+  setTimeout(() => location.reload(), 30000);
+</script>
+</body>
+</html>

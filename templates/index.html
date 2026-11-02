@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotspot Zone – Connect to Internet</title>
+  <style>
+    /* ── Reset & Variables ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f172a;
+      --surface:   #1e293b;
+      --card:      #263148;
+      --accent:    #38bdf8;
+      --accent2:   #818cf8;
+      --success:   #34d399;
+      --danger:    #f87171;
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --border:    #334155;
+      --radius:    14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(56,189,248,.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(129,140,248,.10) 0%, transparent 55%);
+    }
+
+    /* ── Card ───────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 2.25rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .logo {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .logo .icon { font-size: 2.8rem; }
+    .logo h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo p { color: var(--muted); font-size: .85rem; margin-top: .2rem; }
+
+    /* ── Flash ──────────────────────────────────────────────────────── */
+    .flash {
+      padding: .7rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
+      font-size: .9rem;
+    }
+    .flash.danger  { background: rgba(248,113,113,.15); border: 1px solid var(--danger);  color: var(--danger); }
+    .flash.info    { background: rgba(56,189,248,.12);  border: 1px solid var(--accent);  color: var(--accent); }
+    .flash.success { background: rgba(52,211,153,.12);  border: 1px solid var(--success); color: var(--success); }
+
+    /* ── Form ───────────────────────────────────────────────────────── */
+    label {
+      display: block;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: .3rem;
+      margin-top: 1rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    input, select {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: .65rem .85rem;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    select option { background: var(--card); }
+
+    /* ── Plan Grid ──────────────────────────────────────────────────── */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: .6rem;
+      margin-top: .5rem;
+    }
+    .plan-option input[type="radio"] { display: none; }
+    .plan-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: .75rem .5rem;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      margin: 0;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .plan-option input[type="radio"]:checked + label {
+      border-color: var(--accent);
+      background: rgba(56,189,248,.1);
+    }
+    .plan-option .hours { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .plan-option .price { font-size: .8rem; color: var(--accent); margin-top: .15rem; }
+
+    /* ── Divider ────────────────────────────────────────────────────── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin: 1.4rem 0 .5rem;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Payment info box ───────────────────────────────────────────── */
+    .pay-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-top: .8rem;
+    }
+    .pay-box p { font-size: .9rem; color: var(--muted); }
+    .pay-box strong { color: var(--text); }
+    .pay-number {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--success);
+      letter-spacing: .04em;
+      margin: .3rem 0;
+    }
+
+    /* ── Submit button ──────────────────────────────────────────────── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: .8rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1.6rem;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:hover  { opacity: .9; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      margin-top: 1.2rem;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Logo -->
+  <div class="logo">
+    <div class="icon">📡</div>
+    <h1>Hotspot Zone</h1>
+    <p>Fast &amp; Reliable Internet Access</p>
+  </div>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form action="/submit" method="POST">
+
+    <!-- Personal Info -->
+    <label for="name">Your Name</label>
+    <input type="text" id="name" name="name" placeholder="e.g. Rahim Uddin" required />
+
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" name="phone" placeholder="e.g. 01XXXXXXXXX" required />
+
+    <!-- Plan Selection -->
+    <label style="margin-top:1.2rem;">Select a Plan</label>
+    <div class="plan-grid">
+      {% for hours, price in plans.items() %}
+      <div class="plan-option">
+        <input type="radio" name="plan_hours" id="plan_{{ hours }}" value="{{ hours }}"
+               {% if hours == 1 %}checked{% endif %} />
+        <label for="plan_{{ hours }}">
+          <span class="hours">{{ hours }}h</span>
+          <span class="price">৳{{ price }}</span>
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Payment Section -->
+    <div class="divider">Payment Details</div>
+
+    <div class="pay-box">
+      <p>Send payment via <strong>bKash / Nagad / Rocket</strong> to:</p>
+      <div class="pay-number">01700-000000</div>
+      <p style="font-size:.8rem;">Send exact amount, then enter the Transaction ID below.</p>
+    </div>
+
+    <label for="method" style="margin-top:1rem;">Payment Method</label>
+    <select id="method" name="method">
+      <option value="bKash">bKash</option>
+      <option value="Nagad">Nagad</option>
+      <option value="Rocket">Rocket</option>
+      <option value="Cash">Cash</option>
+    </select>
+
+    <label for="txn_id">Transaction ID</label>
+    <input type="text" id="txn_id" name="txn_id" placeholder="e.g. TXN8F3K2P1" required />
+
+    <button type="submit" class="btn btn-primary">🚀 Submit &amp; Connect</button>
+  </form>
+
+  <div class="footer">
+    Your IP: <code>{{ client_ip }}</code> &nbsp;|&nbsp;
+    Admin: <a href="/admin" style="color:var(--accent);">Login</a>
+  </div>
+
+</div>
+</body>
+</html>
